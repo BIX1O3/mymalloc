@@ -1,0 +1,21 @@
+malloc is called time:
+        Check to see if malloc has ever been run. 
+        If not go into an if statement that creates the first *node1 at the start of the memory array. chunk size = objsize+8, state you 1(allocated)
+        Still in the if create a *node2 which will be after the payload memory (node2 ptr = memory+*node1->chunk_size) Then make *node1->next=*node2 and *node2->prev=*node1. *node2->chunk_size = (MEMLENGTH*4)-*node1->chunksize. *node2->state = 0
+
+        then after for creating new nodes when mem is already initialized
+        find current node(free node with available memory) change its state to allocated, change chunksize to objsize+8.
+        create new node(new free node) make state free, set current node .next to the new node and the new nodes .prev to the current. make chunk size = MEMLENGTH - position in array.
+
+        return *p (ptr at metadata +8 to get ptr to payload)
+
+
+
+The head of memory is not null even when its type is MetaData*. Its state is 0 and the .next is NULL
+
+
+If we find that when checking for metadata the client is able to insert a struct with making it so that we can't iterate and check if the state is 0; 
+We can change the MetaData state to be a short and add a size type short to keep the metadata struct at 8 bytes while storing how much data the payload is.
+
+
+Other fix would be iterating by going through metadata ->next
