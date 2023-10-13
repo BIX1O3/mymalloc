@@ -1,0 +1,2 @@
+CC = gcc
+CFLAGS = -g -fsanitize=address,undefined -Wall -Werror -o test
