@@ -7,7 +7,7 @@
 static double memory[MEMLENGTH];
 
 
-void *mallac(size_t objsize){
+void *mymalloc(size_t objsize){
 
     int objsize_8byte = (objsize+7) & ~7; //ensures that the object size is a multiple of 8 using bitwise &
     //printf("obj: %d\n", objsize_8byte);
@@ -101,13 +101,49 @@ void *mallac(size_t objsize){
 }
 
 
-void free1(double *ptr){
+void myfree(void *ptr){
+
+    typedef struct freelist{
+        struct freelist* next;
+    }freelist;
+
+    typedef struct MetaData{
+        int state;   
+        int size;   
+    }MetaData;
+
+    char* heap_start = (char*)memory;
+
+    freelist* head;
+
+    MetaData* thisNode = (MetaData*)heap_start;
+    int count = 0;
+    int isFree = 0;
+    while ((thisNode->size != 0 && thisNode->size !=0) && count < 4096){
+        
+        if (thisNode->state == 0 && isFree == 0){
+            
+        }
+        
+        
+
+        count += thisNode->size;
+        if (count < 4096)    
+            thisNode = (MetaData*)(((char*)thisNode) + (thisNode->size));
+    }
+
 
 }
 
+
+
+
+
+
+
 int main(int argc, char** argv){
 
-    int* ptr = (int*)mallac(25);
+    int* ptr = (int*)mymalloc(25);
 
     int a = 5;
 
@@ -115,7 +151,7 @@ int main(int argc, char** argv){
 
     printf("a=%d  ptr = %p\n\n",*ptr, ptr);
     printf("\n\n\n\n\n");
-    int* ptr2 = (int*)mallac(12);
+    int* ptr2 = (int*)mymalloc(12);
 
     int a2 = 5;
 
@@ -123,7 +159,7 @@ int main(int argc, char** argv){
 
     printf("a2=%d  ptr2 = %p\n\n",*ptr2, ptr2);
     printf("\n\n\n\n\n");
-    int* ptr3 = (int*)mallac(120);
+    int* ptr3 = (int*)mymalloc(120);
 
     int a3 = 5;
 
