@@ -103,34 +103,38 @@ void *mymalloc(size_t objsize){
 
 void myfree(void *ptr){
 
-    typedef struct freelist{
-        struct freelist* next;
-    }freelist;
-
     typedef struct MetaData{
         int state;   
         int size;   
     }MetaData;
+    
+
 
     char* heap_start = (char*)memory;
 
-    freelist* head;
+    MetaData* ptr_toFree = (MetaData*)ptr;
 
     MetaData* thisNode = (MetaData*)heap_start;
+    MetaData* prev_node;
     int count = 0;
-    int isFree = 0;
     while ((thisNode->size != 0 && thisNode->size !=0) && count < 4096){
-        
-        if (thisNode->state == 0 && isFree == 0){
-            
+        if (thisNode == ptr_toFree){
+            ptr_toFree->state = 0;
+            if (prev_node->state == 0){
+                //coalesce free nodes
+                prev_node->size = prev_node->size + ptr_toFree->size;
+            }
         }
         
-        
-
         count += thisNode->size;
-        if (count < 4096)    
+        if (count < 4096){    
+            prev_node = thisNode;
             thisNode = (MetaData*)(((char*)thisNode) + (thisNode->size));
+        }
+
+    
     }
+
 
 
 }
