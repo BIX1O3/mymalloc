@@ -43,7 +43,22 @@ void *mymalloc(size_t objsize){
             //printf("state: %d  size: %d", currentNode->state, currentNode->size);
             //printf("\tposition: %d\n", position);
 
-            if (currentNode->state == 0 && currentNode->size >= objsize_8byte){
+            if (currentNode->state == 0 && currentNode->size >= (objsize_8byte+8)){
+                //printf("O:%ld  O8:%d  C:%d", objsize, objsize_8byte, currentNode->size);
+
+                if (currentNode->size == (objsize_8byte+8)){
+                
+                    currentNode->state = 1;
+
+                    //printf("\n\nEqual:   %d %d\n", currentNode->state, currentNode->size);
+
+                    //printf("mymalloc ptr: %p\n",ptr);
+                    ptr = (void*)(currentNode+1);
+                    break;
+                }
+
+
+
                 //printf("2.2\n\n");
                 
                 old_size = currentNode->size;
@@ -82,6 +97,8 @@ void *mymalloc(size_t objsize){
         printf("count: %d\n\n", count);
         if (count < 4096)    
             thisNode = (MetaData*)(((char*)thisNode) + (thisNode->size));
+
+        //printf("\n%d %d\n", thisNode->state,  thisNode->size);
         
     }
 
@@ -96,7 +113,7 @@ void *mymalloc(size_t objsize){
 
         printf("Third state: %d Third size: %d\n", here->state, here->size);
     }*/
-
+    //printf("mymalloc ptr: %p\n",ptr);
     return ptr;
 }
 
@@ -112,29 +129,59 @@ void myfree(void *ptr){
 
     char* heap_start = (char*)memory;
 
-    MetaData* ptr_toFree = (MetaData*)ptr;
+    MetaData* ptr_toFree = (MetaData*) ptr;
 
     MetaData* thisNode = (MetaData*)heap_start;
     MetaData* prev_node;
     int count = 0;
+
+    /*printf("\n\nFree: %d %d\n",thisNode->state, thisNode->size);
+    if (ptr_toFree == (thisNode+1)){
+        printf("TRUE");
+    }else{
+        printf("FALSE\n%p\n%p\n%p\n%p\n",ptr_toFree, ptr, heap_start, (((char*)thisNode)+8));
+    }*/
+
     while ((thisNode->size != 0 && thisNode->size !=0) && count < 4096){
-        if (thisNode == ptr_toFree){
-            ptr_toFree->state = 0;
-            if (prev_node->state == 0){
+        if ((thisNode+1) == ptr_toFree){
+            thisNode->state = 0;
+            printf("PTR Freed");
+            if (prev_node->state == 0 && thisNode != (MetaData*)heap_start){
                 //coalesce free nodes
-                prev_node->size = prev_node->size + ptr_toFree->size;
+                //printf("\nthis: %d %d\n", thisNode->state,thisNode->size);
+                //printf("\nprev: %d %d\n", prev_node->state,prev_node->size);
+                prev_node->size = prev_node->size + thisNode->size;
+                //printf("\nprev: %d %d\n", prev_node->state,prev_node->size);
+                MetaData* tempNext = (MetaData*)(((char*)thisNode) + (thisNode->size));
+                if (tempNext->state == 0 && (count+tempNext->size)< 4096){
+                    prev_node->size = prev_node->size + tempNext->size;
+                    count += tempNext->size;
+                }
             }
         }
-        
-        count += thisNode->size;
+        if (count < 4096)
+            count += thisNode->size;
         if (count < 4096){    
+            //printf("\n\nPrevNode: %d\n",thisNode->state);
             prev_node = thisNode;
+            //printf("\n\nthisNode: %p\n",thisNode);
+            //printf("\n\nPrevNode: %p\n",prev_node);
             thisNode = (MetaData*)(((char*)thisNode) + (thisNode->size));
         }
 
     
     }
 
+    MetaData* newHead = (MetaData*)heap_start;
+
+    while ((newHead->size != 0 && newHead->size !=0) && count < 4096){
+        printf("Free: %d %d \n", newHead->state, newHead->size);
+        count += newHead->size;
+        printf("Free count: %d\n\n", count);
+        if (count < 4096)    
+            newHead = (MetaData*)(((char*)newHead) + (newHead->size));
+        
+    }
 
 
 }
@@ -147,29 +194,39 @@ void myfree(void *ptr){
 
 int main(int argc, char** argv){
 
-    int* ptr = (int*)mymalloc(25);
+    char* ptr = (char*)mymalloc(25);
 
-    int a = 5;
+    printf("ptr = %p\n\n",ptr);
+    //printf("\n\n\n\n\n");
+    
+    
+    //myfree(ptr);
 
-    ptr = &a;
+    
+    int* ptr2 = (int*)mymalloc(120);
 
-    printf("a=%d  ptr = %p\n\n",*ptr, ptr);
+    printf("ptr = %p\n\n",ptr2);
+
+    myfree(ptr);
+    myfree(ptr2);
+
+    //printf("a2=%d  ptr2 = %p\n\n",*ptr2, ptr2);
     printf("\n\n\n\n\n");
-    int* ptr2 = (int*)mymalloc(12);
+    int* ptr3 = (int*)mymalloc(16);
 
-    int a2 = 5;
 
-    ptr2 = &a2;
+    printf("ptr = %p\n\n",ptr3);
 
-    printf("a2=%d  ptr2 = %p\n\n",*ptr2, ptr2);
-    printf("\n\n\n\n\n");
-    int* ptr3 = (int*)mymalloc(120);
+    //myfree();
 
-    int a3 = 5;
 
-    ptr3 = &a3;
+    //printf("\n\n\n\n\n");
+    //int* ptr4 = (int*)mymalloc(8);
 
-    printf("a3=%d  ptr3 = %p\n\n",*ptr3, ptr3);
+
+    //printf("ptr = %p\n\n",ptr4);
+
+    //printf("a3=%d  ptr3 = %p\n\n",*ptr3, ptr3);
 
     return 0;
 }
