@@ -3,11 +3,20 @@
 #include<string.h>
 #include<stddef.h>
 
+
+
+
 #define MEMLENGTH 512
 static double memory[MEMLENGTH];
 
 
 void *mymalloc(size_t objsize){
+
+    if(objsize == 0) {
+        // CHANGE THIS
+        printf("Error: Cannot allocate 0 bytes");
+        return NULL;
+    }
 
     int objsize_8byte = (objsize+7) & ~7; //ensures that the object size is a multiple of 8 using bitwise &
     //printf("obj: %d\n", objsize_8byte);
@@ -16,10 +25,12 @@ void *mymalloc(size_t objsize){
         int size;   //points to next metadata block 
     }MetaData;
 
+    if(objsize_8byte > MEMLENGTH - 8) {return NULL;}
     
+
     char *heap_start = (char*)memory;
     MetaData* head = (MetaData*) memory;
-    void *ptr;
+    void *ptr = NULL;
 
     int node = 0;
 
@@ -114,6 +125,10 @@ void *mymalloc(size_t objsize){
         printf("Third state: %d Third size: %d\n", here->state, here->size);
     }*/
     //printf("mymalloc ptr: %p\n",ptr);
+
+    if(ptr == NULL) {
+        printf("Error: Not enough memory to allocate %d.", objsize);
+    }
     return ptr;
 }
 
@@ -192,7 +207,22 @@ void myfree(void *ptr){
 }
 
 
+int memCleared() {
+    typedef struct MetaData{
+        int state;   
+        int size;   
+    }MetaData;
+    
+    int chunkSize = (((MetaData*) memory)->size);
+    int free = ((MetaData*) memory)->state;
 
+    // Case: Memory pool is uninitialized or fully cleared
+    if ((chunkSize == 0 && free == 0) || (chunkSize == 4096 && free == 0 )) {
+        return 1;
+    }
+
+    return 0;
+}
 
 
 
