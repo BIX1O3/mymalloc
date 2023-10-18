@@ -1,4 +1,6 @@
 // Compile with -DREALMALLOC to use the real malloc() instead of mymalloc()
+#include<stdio.h>
+#include<stddef.h>
 #ifndef REALMALLOC
 #include "mymalloc.h"
 #endif
@@ -56,4 +58,14 @@ void test3() {
     }
 
     printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
+}
+
+int main (int argc, void** argv){
+
+    test1();
+    test2();
+    test3();
+
+
+    return 0;
 }
