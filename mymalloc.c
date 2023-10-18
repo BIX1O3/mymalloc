@@ -13,13 +13,13 @@ static double memory[MEMLENGTH];
 void *mymalloc(size_t objsize){
 
     if(objsize == 0) {
-        // CHANGE THIS
+        
         printf("Error: Cannot allocate 0 bytes");
         return NULL;
     }
 
     int objsize_8byte = (objsize+7) & ~7; //ensures that the object size is a multiple of 8 using bitwise &
-    //printf("obj: %d\n", objsize_8byte);
+    
     typedef struct MetaData{ //If we want to have two ints we can use two short ints which are only 2 bytes each
         int state;  //free = 0 and allocated is set to 1 
         int size;   //points to next metadata block 
@@ -41,57 +41,47 @@ void *mymalloc(size_t objsize){
         MetaData* newnode = (MetaData*)(heap_start+(head->size));
         newnode->state = 0;  //originally 0 so this is is redundant
         newnode->size = (MEMLENGTH * 8) - (head->size);
-        //printf("1\n\n");
+        
         ptr = (void*)(heap_start + 8);
     } else {
         MetaData* currentNode = (MetaData*)heap_start;
         int position = 0;
-        //int node = 0;
+        
         int old_size = 0;
-        //printf("2.1\n");
+        
         while(position < (MEMLENGTH*8) && node == 0) { //&& currentNode->state != 0 && currentNode->size != 0
 
             //printf("state: %d  size: %d", currentNode->state, currentNode->size);
             //printf("\tposition: %d\n", position);
 
             if (currentNode->state == 0 && currentNode->size >= (objsize_8byte+8)){
-                //printf("O:%ld  O8:%d  C:%d", objsize, objsize_8byte, currentNode->size);
 
                 if (currentNode->size == (objsize_8byte+8)){
                 
                     currentNode->state = 1;
 
-                    //printf("\n\nEqual:   %d %d\n", currentNode->state, currentNode->size);
-
-                    //printf("mymalloc ptr: %p\n",ptr);
                     ptr = (void*)(currentNode+1);
                     break;
                 }
-
-
-
-                //printf("2.2\n\n");
                 
                 old_size = currentNode->size;
                 currentNode->state = 1;
                 currentNode->size = objsize_8byte+8;
 
 
-
                 MetaData* newnode = (MetaData*)((char*)currentNode+(currentNode->size));
-                printf("\n\nOldSize = %d\n",old_size);
-                //printf("%d %d\n\n", currentNode->state, currentNode->size);
+                //printf("\n\nOldSize = %d\n",old_size);  // uncomment
+                
                 
                 newnode->state = 0;  //originally 0 so this is is redundant
                 newnode->size = old_size - (objsize_8byte+8); // check to see if this logic works
 
-                printf("\n\nNewSize = %d\n\n\n\n",newnode->size);
+                //printf("\n\nNewSize = %d\n\n\n\n",newnode->size);     // uncomment
 
                 node = 1;
                 ptr = (void*)(currentNode+1);
-                //printf("2\n\n");
+                
             }else{
-                //printf("3\n\n\n\n\n");
                 currentNode = (MetaData*)((char*)currentNode + currentNode->size);
             }
             position += currentNode->size;
@@ -102,32 +92,20 @@ void *mymalloc(size_t objsize){
     MetaData* thisNode = (MetaData*)heap_start;
     int count = 0;
     while ((thisNode->size != 0 && thisNode->size !=0) && count < 4096){
-        //printf("runs\n");
-        printf("%d %d \n", thisNode->state, thisNode->size);
+        
+        //printf("%d %d \n", thisNode->state, thisNode->size);               // uncomment
         count += thisNode->size;
-        printf("count: %d\n\n", count);
+        //printf("count: %d\n\n", count);                                    // uncomment
         if (count < 4096)    
             thisNode = (MetaData*)(((char*)thisNode) + (thisNode->size));
 
-        //printf("\n%d %d\n", thisNode->state,  thisNode->size);
+        
         
     }
 
-    /*printf("first state: %d first size: %d\n", ((MetaData*)heap_start)->state, ((MetaData*)heap_start)->size);
-    printf("Second state: %d Second size: %d\n", (((MetaData*)heap_start+(((MetaData*)heap_start)->size)))->state, ((MetaData*)(heap_start+((MetaData*)heap_start)->size))->size);
-
-    if (node == 1){
-        MetaData* thisNode = (MetaData*)(heap_start+(((MetaData*)heap_start)->size));
-
-        MetaData* thisNode = (MetaData*)(((char*)thisNode) + (thisNode->size));
-        
-
-        printf("Third state: %d Third size: %d\n", here->state, here->size);
-    }*/
-    //printf("mymalloc ptr: %p\n",ptr);
 
     if(ptr == NULL) {
-        printf("Error: Not enough memory to allocate %d.", objsize);
+        printf("Error: Not enough memory to allocate %ld.", objsize);
     }
     return ptr;
 }
@@ -139,12 +117,20 @@ void myfree(void *ptr){
         int state;   
         int size;   
     }MetaData;
-    
 
+    
+    
+    if (ptr == NULL){
+        printf("Error: Cannot Deallocate NULL Pointer");
+        return;
+    }
 
     char* heap_start = (char*)memory;
 
     MetaData* ptr_toFree = (MetaData*) ptr;
+
+    //printf("ptr: %d %d", ((MetaData*)((char*)ptr-8))->state, ((MetaData*)((char*)ptr-8))->size); //uncomment
+
 
     MetaData* thisNode = (MetaData*)heap_start;
     MetaData* prev_node;
@@ -157,35 +143,37 @@ void myfree(void *ptr){
         printf("FALSE\n%p\n%p\n%p\n%p\n",ptr_toFree, ptr, heap_start, (((char*)thisNode)+8));
     }*/
 
-    while ((thisNode->size != 0 && thisNode->size !=0) && count < 4096){
+    
+
+    while (thisNode->size != 0  && count < 4096){
         if ((thisNode+1) == ptr_toFree){
             thisNode->state = 0;
-            printf("PTR Freed");
+            //printf("\nPTR Freed  thisNode: %d %d\n\n", thisNode->state, thisNode->size);  // uncomment
+            
             MetaData* tempNext = (MetaData*)(((char*)thisNode) + (thisNode->size));
-            if (prev_node->state == 0 && thisNode != (MetaData*)heap_start){
+
+            if (thisNode == (MetaData*)heap_start && tempNext->state ==0){
+                thisNode->size = thisNode->size + tempNext->size;
+            }
+
+            if (thisNode != (MetaData*)heap_start && prev_node->state == 0){
                 //coalesce free nodes
-                //printf("\nthis: %d %d\n", thisNode->state,thisNode->size);
-                //printf("\nprev: %d %d\n", prev_node->state,prev_node->size);
                 prev_node->size = prev_node->size + thisNode->size;
-                //printf("\nprev: %d %d\n", prev_node->state,prev_node->size);
-                //MetaData* tempNext = (MetaData*)(((char*)thisNode) + (thisNode->size));
+                
                 if (tempNext->state == 0 && (count+tempNext->size)< 4096){
                     prev_node->size = prev_node->size + tempNext->size;
                     count += tempNext->size;
                 }
             }
-            //MetaData* tempNext = (MetaData*)(((char*)thisNode) + (thisNode->size));
-            if (prev_node->state == 1 && tempNext->state ==0){
+            
+            if (thisNode != (MetaData*)heap_start && prev_node->state == 1 && tempNext->state ==0){
                 thisNode->size = thisNode->size +tempNext->size;
             }
         }
         if (count < 4096)
             count += thisNode->size;
-        if (count < 4096){    
-            //printf("\n\nPrevNode: %d\n",thisNode->state);
+        if (count < 4096){
             prev_node = thisNode;
-            //printf("\n\nthisNode: %p\n",thisNode);
-            //printf("\n\nPrevNode: %p\n",prev_node);
             thisNode = (MetaData*)(((char*)thisNode) + (thisNode->size));
         }
 
@@ -195,9 +183,9 @@ void myfree(void *ptr){
     MetaData* newHead = (MetaData*)heap_start;
 
     while ((newHead->size != 0 && newHead->size !=0) && count < 4096){
-        printf("Free: %d %d \n", newHead->state, newHead->size);
+        //printf("Free: %d %d \n", newHead->state, newHead->size);  // uncomment
         count += newHead->size;
-        printf("Free count: %d\n\n", count);
+        //printf("Free count: %d\n\n", count);  // uncomment
         if (count < 4096)    
             newHead = (MetaData*)(((char*)newHead) + (newHead->size));
         
@@ -227,7 +215,7 @@ int memCleared() {
 
 
 
-int main(int argc, char** argv){
+/*int main(int argc, char** argv){
 
     char* ptr = (char*)mymalloc(25);
 
@@ -265,4 +253,4 @@ int main(int argc, char** argv){
     //printf("a3=%d  ptr3 = %p\n\n",*ptr3, ptr3);
 
     return 0;
-}
+}*/
