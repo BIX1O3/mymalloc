@@ -101,24 +101,26 @@ void *mymalloc(size_t objsize){
 
                 node = 1;
                 ptr = (void*)(currentNode+1);
+                break;
                 
-            }else if(position + currentNode->size <= MEMLENGTH * 8) {
+            }else if(position + currentNode->size < MEMLENGTH * 8 ) {
+                position += currentNode->size;
                 currentNode = (MetaData*)((char*)currentNode + currentNode->size);
             } else {
                 break;
             }
-            position += currentNode->size;
+            
         }
     }
     //debugging loop checks the size of all of the nodes
     /*MetaData* thisNode = (MetaData*)heap_start;
     int count = 0;
-    while ((thisNode->size != 0 && thisNode->size !=0) && count < 4096){
+    while ((thisNode->size != 0 && thisNode->size !=0) && count < MEMLENGTH*8){
         
         printf("%d %d \n", thisNode->state, thisNode->size);               // uncomment
         count += thisNode->size;
         printf("count: %d\n\n", count);                                    // uncomment
-        if (count < 4096)    
+        if (count < MEMLENGTH*8)    
             thisNode = (MetaData*)(((char*)thisNode) + (thisNode->size)); 
     }*/
 
@@ -164,7 +166,7 @@ void myfree(void *ptr){
 
     
 
-    while (thisNode->size != 0  && count < 4096){
+    while (thisNode->size != 0  && count < MEMLENGTH*8){
         if ((thisNode+1) == ptr_toFree){
             
             if (thisNode->state == 0)
@@ -181,50 +183,65 @@ void myfree(void *ptr){
                 break;
             }
 
-            MetaData* tempNext = (MetaData*)(((char*)thisNode) + (thisNode->size));
+            int tsize = 0;
+            int tstate = 0;
+            if(count + thisNode->size < MEMLENGTH * 8) {
+                MetaData* tempNext = (MetaData*)(((char*)thisNode) + (thisNode->size));
+                tsize = tempNext->size;
+                tstate = tempNext->state;
+            }
             //printf("%d %d\n",thisNode->state,thisNode->size);
             //printf("%d %d\n",tempNext->state,tempNext->size);
             
 
-            if (thisNode == (MetaData*)heap_start && tempNext->state == 0){
-                thisNode->size = thisNode->size + tempNext->size;
+            if (thisNode == (MetaData*)heap_start && tstate == 0){
+                
+                //count += tempNext->size;
+                thisNode->size = thisNode->size + tsize;
+                
             }
 
-            
+            //printf("Count: %d \n", count);
             
             if (thisNode != (MetaData*)heap_start && prev_node->state == 0){
                 //coalesce free nodes
                 prev_node->size = prev_node->size + thisNode->size;
                 //printf("%d %d\n",thisNode->state,thisNode->size);
                 //printf("%d %d\n",tempNext->state,tempNext->size);
-                if ((count+tempNext->size)< 4096 && tempNext->state == 0){
-                    prev_node->size = prev_node->size + tempNext->size;
-                    count += tempNext->size;
+                if ((count+tsize)<= MEMLENGTH*8 && tstate == 0){
+                    prev_node->size = prev_node->size + tsize;
+                    count += tsize;
                 }
             }
             
-            if (thisNode != (MetaData*)heap_start && prev_node->state == 1 && tempNext->state ==0){
-                thisNode->size = thisNode->size +tempNext->size;
+            
+
+            if(count + thisNode->size <= MEMLENGTH * 8) {
+            
+                if (thisNode != (MetaData*)heap_start && prev_node->state == 1 && tstate ==0){
+                    thisNode->size = thisNode->size +tsize;
+                }
+
             }
         }
-        if (count < 4096)
+        if (count < MEMLENGTH*8)
             count += thisNode->size;
-        if (count < 4096){
+        if (count < MEMLENGTH*8){
             prev_node = thisNode;
             thisNode = (MetaData*)(((char*)thisNode) + (thisNode->size));
         }
 
     
     }
-    /*printf("111111\n");
+    //printf("111111\n");
 
-    MetaData* newHead = (MetaData*)heap_start;
+    /*MetaData* newHead = (MetaData*)heap_start;
     count = 0;
-    while ((newHead->size != 0 && newHead->size !=0) && count < 4096){
+    while ((newHead->size != 0 && newHead->size !=0) && count < MEMLENGTH*8){
         printf("Free: %d %d \n", newHead->state, newHead->size);  // uncomment
         count += newHead->size;
         printf("Free count: %d\n\n", count);  // uncomment
-        if (count < 4096)    
+        if (count < MEMLENGTH*8)    
             newHead = (MetaData*)(((char*)newHead) + (newHead->size));
         
     }*/
@@ -248,7 +265,7 @@ int memCleared() {
     int free = ((MetaData*) memory)->state;
 
     // Case: Memory pool is uninitialized or fully cleared
-    if ((chunkSize == 0 && free == 0) || (chunkSize == 4096 && free == 0 )) {
+    if ((chunkSize == 0 && free == 0) || (chunkSize == MEMLENGTH*8 && free == 0 )) {
         return 1;
     }
 
