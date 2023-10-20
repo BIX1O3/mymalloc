@@ -11,21 +11,30 @@ static double memory[MEMLENGTH];
 
 
 void *mymalloc(size_t objsize){
-
+    
     if(objsize == 0) {
         
-        printf("Error: Cannot allocate 0 bytes");
+        printf("Error: Cannot allocate 0 bytes\n");
         return NULL;
     }
 
-    int objsize_8byte = (objsize+7) & ~7; //ensures that the object size is a multiple of 8 using bitwise &
     
+
+     long int objsize_8byte = (objsize+7) & ~7; //ensures that the object size is a multiple of 8 using bitwise &
+    
+    
+    if(objsize_8byte+8> MEMLENGTH*8) {
+        
+        printf("Error: Cannot allocate %ld byte(s)\n", objsize);
+        return NULL;
+    }
+
     typedef struct MetaData{ //If we want to have two ints we can use two short ints which are only 2 bytes each
         int state;  //free = 0 and allocated is set to 1 
         int size;   //points to next metadata block 
     }MetaData;
 
-    if(objsize_8byte > MEMLENGTH - 8) {return NULL;}
+    if(objsize_8byte > (MEMLENGTH*8) - 8) {return NULL;}
     
 
     char *heap_start = (char*)memory;
@@ -33,7 +42,7 @@ void *mymalloc(size_t objsize){
     void *ptr = NULL;
 
     int node = 0;
-
+    
     if ((*head).state == 0 && (*head).size == 0){
         head->state = 1;
         head->size = objsize_8byte+8;
@@ -45,7 +54,15 @@ void *mymalloc(size_t objsize){
         ptr = (void*)(heap_start + 8);
     } else {
         MetaData* currentNode = (MetaData*)heap_start;
+
         int position = 0;
+        int count = 0;
+
+        if (memCleared() == 0){
+            count = currentNode->size;
+        }
+
+        
         
         int old_size = 0;
         
@@ -53,6 +70,10 @@ void *mymalloc(size_t objsize){
 
             //printf("state: %d  size: %d", currentNode->state, currentNode->size);
             //printf("\tposition: %d\n", position);
+
+            if (count+objsize_8byte > MEMLENGTH*8){
+                break;
+            }
 
             if (currentNode->state == 0 && currentNode->size >= (objsize_8byte+8)){
 
@@ -87,25 +108,21 @@ void *mymalloc(size_t objsize){
             position += currentNode->size;
         }
     }
-    //printf("5\n\n");
     //debugging loop checks the size of all of the nodes
     /*MetaData* thisNode = (MetaData*)heap_start;
     int count = 0;
     while ((thisNode->size != 0 && thisNode->size !=0) && count < 4096){
         
-        //printf("%d %d \n", thisNode->state, thisNode->size);               // uncomment
+        printf("%d %d \n", thisNode->state, thisNode->size);               // uncomment
         count += thisNode->size;
-        //printf("count: %d\n\n", count);                                    // uncomment
+        printf("count: %d\n\n", count);                                    // uncomment
         if (count < 4096)    
-            thisNode = (MetaData*)(((char*)thisNode) + (thisNode->size));
-
-        
-        
+            thisNode = (MetaData*)(((char*)thisNode) + (thisNode->size)); 
     }*/
 
-
+    
     if(ptr == NULL) {
-        printf("Error: Not enough memory to allocate %ld.", objsize);
+        printf("Error: Not enough memory to allocate %ld byte(s)\n", objsize);
     }
     return ptr;
 }
@@ -118,19 +135,10 @@ void myfree(void *ptr){
         int size;   
     }MetaData;
 
-<<<<<<< HEAD
-    if(memCleared() == 1) {
-        printf("Error: No memory to free.");
-        printf("Line: %d", __LINE__);
-        return;
-    }
-    
-=======
     int wasFreed = 0;
->>>>>>> acef5d67694010f665f0ea731a538bf2e65b1c2f
     
     if (ptr == NULL){
-        printf("Error: Cannot Deallocate NULL Pointer");
+        printf("Error: Cannot Deallocate NULL Pointer\n");
         return;
     }
 
@@ -156,14 +164,6 @@ void myfree(void *ptr){
 
     while (thisNode->size != 0  && count < 4096){
         if ((thisNode+1) == ptr_toFree){
-<<<<<<< HEAD
-            if(thisNode->state == 0) {
-                break;
-            }
-            thisNode->state = 0;
-            //printf("\nPTR Freed  thisNode: %d %d\n\n", thisNode->state, thisNode->size);  // uncomment
-=======
->>>>>>> acef5d67694010f665f0ea731a538bf2e65b1c2f
             
             if (thisNode->state == 0)
                 break;
@@ -184,7 +184,7 @@ void myfree(void *ptr){
             //printf("%d %d\n",tempNext->state,tempNext->size);
             
 
-            if (thisNode == (MetaData*)heap_start && tempNext->state ==0){
+            if (thisNode == (MetaData*)heap_start && tempNext->state == 0){
                 thisNode->size = thisNode->size + tempNext->size;
             }
 

@@ -1,23 +1,23 @@
 CC = gcc
 CFLAGS = -g -fsanitize=address,undefined -Wall
+MYMALLOC_SRC = mymalloc.c
+MYMALLOC_OBJ = $(MYMALLOC_SRC:.c=.o)
+SRCS = memgrind.c mymalloctest.c memtest.c
+TARGETS = memgrind mymalloctest memtest
 
-TARGET = memgrind
-SRCS = memgrind.c mymalloc.c
-OBJS = $(SRCS:.c=.o)
+all: $(TARGETS)
 
+memgrind: memgrind.o $(MYMALLOC_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^
 
+mymalloctest: mymalloctest.o $(MYMALLOC_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^
 
-all:$(TARGET)
-
-
-
-$(TARGET):$(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
-
+memtest: memtest.o $(MYMALLOC_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(TARGET) $(OBJS)
-
+	rm -f $(TARGETS) $(MYMALLOC_OBJ) $(wildcard *.o)
