@@ -118,6 +118,11 @@ void myfree(void *ptr){
         int size;   
     }MetaData;
 
+    if(memCleared() == 1) {
+        printf("Error: No memory to free.");
+        printf("Line: %d", __LINE__);
+        return;
+    }
     
     
     if (ptr == NULL){
@@ -147,6 +152,9 @@ void myfree(void *ptr){
 
     while (thisNode->size != 0  && count < 4096){
         if ((thisNode+1) == ptr_toFree){
+            if(thisNode->state == 0) {
+                break;
+            }
             thisNode->state = 0;
             //printf("\nPTR Freed  thisNode: %d %d\n\n", thisNode->state, thisNode->size);  // uncomment
             
