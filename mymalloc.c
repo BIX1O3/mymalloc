@@ -102,8 +102,10 @@ void *mymalloc(size_t objsize){
                 node = 1;
                 ptr = (void*)(currentNode+1);
                 
-            }else{
+            }else if(position + currentNode->size <= MEMLENGTH * 8) {
                 currentNode = (MetaData*)((char*)currentNode + currentNode->size);
+            } else {
+                break;
             }
             position += currentNode->size;
         }

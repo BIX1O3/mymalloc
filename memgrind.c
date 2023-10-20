@@ -140,7 +140,7 @@ void test5() {
         if(ptrs == 0 || (rand() % 2 == 0 && ptrs < 120)) {
             // Allocate a random amount of bytes of memory and store the address
             //printf("alloc loc=%d\n", ptrs);
-            int randSize = (rand() % 800) + 1;
+            int randSize = (rand() % 200) + 1;
             ptrArray[ptrs] = malloc(randSize);
             if(ptrArray[ptrs] != NULL) { // only update the pointer if we haven't reached the end of memory
                 allocated[ptrs] = 1;

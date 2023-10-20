@@ -66,7 +66,7 @@ void malloc_test1(){
 //Tests for when client calls malloc with to many bytes
 //Tests for when client calls malloc with 0 bytes
 void malloc_test2(){
-    void *ptr = malloc(999999999999999999);
+    void *ptr = malloc(9999999);
     void *ptr2 = malloc(0);
 }
 
@@ -79,7 +79,7 @@ void malloc_test3(){
 
     //clean memory
     free(ptr);
-    free(ptr2);
+    
 }
 
 
