@@ -27,18 +27,15 @@ void detecting_errors(){
     int *q = t;
     free(t);
     free(q);
-
-
-
     
     free(p); //clean memory for other test cases
 }
 
 
 /*******************************************
- * TEST Memory capicity
+ * TEST Memory capacity
  * Calls 256 1 byte malloc calls to fill memory
- * Calls on the 256 pointer to ensure proper coalescing 
+ * Calls free on the 256 pointers to ensure proper coalescing 
  * Repeats malloc and free calls to test on an initialized memory
  *******************************************/
 void malloc_test1(){
@@ -75,7 +72,7 @@ void malloc_test1(){
 
 
 /*******************************************
- * TEST Unexptable client malloc inputs
+ * TEST Unacceptable client malloc inputs
  * Calls malloc with 9999999 bytes to test for malloc client requests larger than memory
  * Calls malloc with 0 bytes to test for malloc client requests for no bytes 
  *******************************************/
@@ -88,7 +85,7 @@ void malloc_test2(){
 
 /*******************************************
  * TEST malloc call for bytes that memory is unable to allocate
- * Calls malloc 4000 bytes and then with 100 bytes to purposefully go over the memory size
+ * Calls malloc with 4000 bytes and then with 100 bytes to purposefully go over the memory size
  * Calls free on a NULL pointer recieved from malloc
  *******************************************/
 void malloc_test3(){
@@ -98,9 +95,6 @@ void malloc_test3(){
 
     free(ptr2); //purposefully free a NULL ptr returned by malloc
     
-
-
-
     free(ptr); //clean memory
 }
 
