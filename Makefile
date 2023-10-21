@@ -2,8 +2,8 @@ CC = gcc
 CFLAGS = -g -fsanitize=address,undefined -Wall
 MYMALLOC_SRC = mymalloc.c
 MYMALLOC_OBJ = $(MYMALLOC_SRC:.c=.o)
-SRCS = memgrind.c mymalloctest.c memtest.c
-TARGETS = memgrind mymalloctest memtest
+SRCS = memgrind.c mymalloctest.c
+TARGETS = memgrind mymalloctest
 
 all: $(TARGETS)
 
