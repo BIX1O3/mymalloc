@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g -fsanitize=address,undefined -Wall
+CFLAGS = -g -fsanitize=address,undefined
 MYMALLOC_SRC = mymalloc.c
 MYMALLOC_OBJ = $(MYMALLOC_SRC:.c=.o)
 SRCS = memgrind.c mymalloctest.c
