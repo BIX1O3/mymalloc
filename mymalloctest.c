@@ -22,7 +22,7 @@ void detecting_errors(){
     int *p = malloc(sizeof(int)*2);
     free(p+1);
 
-    printf("\nTest 3: Calls free on an address for the second time\nExpected Output: \"Error: Unable to free memory address\"\n");
+    printf("\nTest 3: Calls free on an address for the second time\nExpected Output: \"Error: Memory address already free.\"\n");
     int *t = malloc(sizeof(int)*100);
     int *q = t;
     free(t);

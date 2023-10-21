@@ -16,7 +16,6 @@ void test1() {
         char *ptr = malloc(1);  // Allocate 1 byte of memory
         free(ptr);  // Release the memory
     }
-    //printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
 }
 
 /*******************************************
@@ -36,7 +35,6 @@ void test2() {
         free(ptrArray[i]);  // Release the memory
     }
 
-   // printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
 }
 
 /*******************************************
@@ -54,20 +52,16 @@ void test3() {
     for(int i = 0; i < 120; i++) {
         if(loc == 0 || (rand() % 2 == 0 && loc < 120)) {
             // Allocate 1 byte of memory and store the address
-            // printf("alloc loc=%d\n", loc);
             ptrArray[loc] = malloc(1);
             allocated[loc] = 1;
             loc++;
         } else {
             // Release the memory
             loc--;
-            // printf("free loc=%d\n", loc);
             free(ptrArray[loc]);
             allocated[loc] = 0;
         }
     }
-
-    //printf("Process is done.\n");
 
     // Clean up any unreleased memory
     for(int i = 0; i < 120; i++) {
@@ -75,8 +69,6 @@ void test3() {
             free(ptrArray[i]);
         }
     }
-
-    //printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
 }
 
 /*******************************************
@@ -119,9 +111,6 @@ void test4() {
         free(ptrArray[i]);  // Release the memory
     }
 
-    //printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
-
-
 }
 
 /*******************************************
@@ -139,8 +128,7 @@ void test5() {
     for(int i = 0; i < 120; i++) {
         if(ptrs == 0 || (rand() % 2 == 0 && ptrs < 120)) {
             // Allocate a random amount of bytes of memory and store the address
-            //printf("alloc loc=%d\n", ptrs);
-            int randSize = (rand() % 800) + 1;
+            int randSize = (rand() % 200) + 1;
             ptrArray[ptrs] = malloc(randSize);
             if(ptrArray[ptrs] != NULL) { // only update the pointer if we haven't reached the end of memory
                 allocated[ptrs] = 1;
@@ -160,13 +148,10 @@ void test5() {
                 }
             }
 
-            //printf("free loc=%d\n", randPtr);
             free(ptrArray[randPtr]);
             allocated[randPtr] = 0;
         }
     }
-
-    // printf("Process is done.\n");
 
     // Clean up any unreleased memory
     for(int i = 0; i < 120; i++) {
@@ -175,7 +160,6 @@ void test5() {
         }
     }
 
-    //printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
 
 }
 
@@ -185,18 +169,19 @@ int main (int argc, void** argv){
     struct timeval start, end;
     double sum = 0;
     
-    
+    // Test 1
+    printf("Test 1: malloc() and immediately free() a 1-byte object, 120 times. \n");
     for(int i = 0; i < 50; i++) {
         gettimeofday(&start, NULL);
         test1();
         gettimeofday(&end, NULL);
         sum += (end.tv_usec - start.tv_usec);
     }
+    printf("Task 1 took %lf ms. \n\n", sum/50000);
 
-    printf("Task 1 took %lf ms. \n", sum/50000);
-
+    //Test 2
+    printf("Test 2: Get 120 1-byte objects,  then use free() to deallocate the chunks.\n");
     sum = 0;
-
     for(int i = 0; i < 50; i++) {
         gettimeofday(&start, NULL);
         test2();
@@ -204,32 +189,34 @@ int main (int argc, void** argv){
         sum += (end.tv_usec - start.tv_usec);
     }
 
-    printf("Task 2 took %lf ms. \n", sum/50000);
+    printf("Task 2 took %lf ms. \n\n", sum/50000);
 
-    sum = 0;
-    
+    // Test 3
+    printf("Test 3: Repeatedly make a random choice between allocating a 1-byte object or deallocating a previously allocated object.\n");
+    sum = 0; 
     for(int i = 0; i < 50; i++) {
         gettimeofday(&start, NULL);
         test3();
         gettimeofday(&end, NULL);
         sum += (end.tv_usec - start.tv_usec);
     }
+    printf("Task 3 took %lf ms. \n\n", sum/50000);
 
-    printf("Task 3 took %lf ms. \n", sum/50000);
-
+    // Test 4
+    printf("Test 4: Completely fill memory with fake metadata structs. Completely empty and then fill and empty again. \n");
+    printf("This stress test checks to make sure nothing from the payload is being read, and freed space can be used again. \n");
     sum = 0;
-
     for(int i = 0; i < 50; i++) {
         gettimeofday(&start, NULL);
         test4();
         gettimeofday(&end, NULL);
         sum += (end.tv_usec - start.tv_usec);
     }
+    printf("Task 4 took %lf ms. \n\n", sum/50000);
 
-    printf("Task 4 took %lf ms. \n", sum/50000);
-
+    // Test 5
+    printf("Test 5: Repeatedly make a random choice between allocating a random amount of bytes (1-200) or deallocating a random previous pointer. \n");
     sum = 0;
-
     for(int i = 0; i < 50; i++) {
         gettimeofday(&start, NULL);
         test5();
