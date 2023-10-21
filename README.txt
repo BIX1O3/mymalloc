@@ -5,7 +5,24 @@ Contributors:
 Matthew Bixby mjb593
 Serge Kuznetsov sak339
 ---------------------------------------------------------------------------------------
-Test Plan:
+How to run tests:
+
+run 'make' to create memgrind and mymalloctest
+run './mymalloctest' to correctness test
+run './memgrind' to stress test
+---------------------------------------------------------------------------------------
+Design Choices:
+
+Header Block: We used a MetaData struct that stores the size of the chunk and the state of the chunk. 
+              We used a pointer of type MetaData in order to quickly iterate through memory without ever accessing the payload.
+
+
+Error Reporting:  We chose to print a detailed error statement and return without exiting the program. 
+                  We chose this as it will allow for efficient testing as mymalloc and myfree returns before the fatal error is commited. 
+
+memCleared: We created the function memCleared in order to aid testing whether memory has been initialized or if the entire memory block is one free chunk.
+---------------------------------------------------------------------------------------
+Test Plan and Programs:
 
 We have two files for testing: mymalloctest.c and memgrind.c.
 -------------------
@@ -72,18 +89,3 @@ Upon execution, the program runs each of the five tests 50 times, measuring the 
 
 Together, these tests provide a comprehensive stress test for mymalloc, ensuring that it can handle a wide range of scenarios and loads,
 as the tests cover variability in allocation and memory sizing, consistency, and reusing freed memory.
----------------------------------------------------------------------------------------
-How to run tests:
-
-run 'make' to create memgrind and mymalloctest
-run './mymalloctest' to correctness test
-run './memgrind' to stress test
----------------------------------------------------------------------------------------
-Design Choices:
-
-explain design choices
-
-
-
-
-
